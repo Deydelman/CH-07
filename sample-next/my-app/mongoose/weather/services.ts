@@ -9,6 +9,7 @@ export async function storeDocument(doc: WeatherInterface): Promise<boolean> {
     }
     return true;
 }
+
 export async function findByZip(
     paramZip: string
 ): Promise<Array<WeatherInterface> | null> {
@@ -19,6 +20,7 @@ export async function findByZip(
     }
     return [];
 }
+
 export async function updateByZip(
     paramZip: string,
     newData: WeatherInterface
@@ -31,6 +33,7 @@ export async function updateByZip(
     }
     return false;
 }
+
 export async function deleteByZip(
     paramZip: string
 ): Promise<boolean> {
@@ -42,3 +45,4 @@ export async function deleteByZip(
     }
     return false;
 }
+
