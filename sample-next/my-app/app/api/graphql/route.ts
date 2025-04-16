@@ -3,6 +3,8 @@ import { startServerAndCreateNextHandler } from "@as-integrations/next";
 import { resolvers } from "../../graphql/resolvers";
 import { typeDefs } from "../../graphql/schema";
 import { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
+import dbConnect from "@/middleware/db-connect";
+import { NextResponse } from "next/server";
 
 //@ts-ignore
 const server = new ApolloServer({
@@ -12,20 +14,40 @@ const server = new ApolloServer({
 
 const handler = startServerAndCreateNextHandler(server);
 
-const allowCors =
-    (fn: NextApiHandler) => async (req: NextApiRequest, res: NextApiResponse) => {
-        res.setHeader("Allow", "POST");
-        res.setHeader("Access-Control-Allow-Origin", "*");
-        res.setHeader("Access-Control-Allow-Methods", "POST");
-        res.setHeader("Access-Control-Allow-Headers", "*");
-        res.setHeader("Access-Control-Allow-Credentials", "true");
-        
-      if (req.method === "OPTIONS") {
-            res.status(200).end();
-        }
-        return await fn(req, res);
-    };
+async function connectDB(req: NextRequest) {
+    await dbConnect();
+    return handler(req);
+}
 
-export default allowCors(handler);
-export const GET = startServerAndCreateNextHandler(server);
-export const POST = startServerAndCreateNextHandler(server);
+async function allowCors(req: NextRequest) {
+    const response = await connectDB(req);
+    if (req.method === "OPTIONS") {
+        return new NextResponse(null, {
+            status: 200,
+            headers: {
+                "Allow": "POST",
+                "Access-Control-Allow-Origin" : "*",
+                "Access-Control-Allow-Methods" : "POST",
+                "Access-Control-Allow-Headers" : "*",
+                "Access-Control-Allow-Credentials" : "true",
+            }
+        });
+}
+// Set CORS headers on the response
+response.headers.set("Access-Control-Allow-Origin", "*");
+response.headers.set("Access-Control-Allow-Methods", "POST");
+response.headers.set("Access-Control-Allow-Headers", "*");
+response.headers.set("Access-Control-Allow-Credentials", "true");
+
+return response;
+}
+
+// Named export for POST method (GraphQL tyically uses POST)
+export async function POST(req: NextRequest) {
+    return allowCors(req);
+}
+
+    // Optional: Named export for GET (if you want to support GraphQL queries via GET)
+    export async function GET(req: NextRequest) {
+        return allowCors(req);
+    }
