@@ -20,6 +20,6 @@ export async function GET(request: Request, { params }: {params: { zipcode: stri
 /*
 export async function GET(request: Request, { params }: { params: { id: string } }) {
     const { zipcode } = req.query; // Extract dynamic route parameter
-    reurn NextResponse.json({ message : `Recieved ID: ${id}` });
-    }
+    return NextResponse.json({ message : `Recieved ID: ${id}` });
+  }
 */
